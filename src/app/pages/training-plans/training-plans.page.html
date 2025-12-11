@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Trainingspläne</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" routerLink="/profile">
+        <ion-icon name="person-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page-container">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+      <p>Lädt...</p>
+    </div>
+
+    <!-- Trainingspläne Liste - EINFACH UND DIREKT -->
+    <div *ngIf="!loading">
+      <div *ngFor="let plan of trainingPlans; trackBy: trackByPlanId" class="card-item" (click)="openPlan(plan)">
+        <div class="card-item-header">
+          <div style="flex: 1;">
+            <h3 class="card-item-title">{{ plan?.name || 'Unbenannter Plan' }}</h3>
+            <p class="card-item-subtitle">{{ plan?.description || 'Keine Beschreibung' }}</p>
+          </div>
+          <ion-badge *ngIf="plan?.isActive" color="success">Aktiv</ion-badge>
+        </div>
+        <div class="card-item-actions">
+          <ion-button
+            *ngIf="!plan?.isActive"
+            fill="outline"
+            size="small"
+            (click)="setActivePlan(plan); $event.stopPropagation()"
+          >
+            Aktivieren
+          </ion-button>
+          <ion-button
+            fill="clear"
+            size="small"
+            color="danger"
+            (click)="deletePlan(plan); $event.stopPropagation()"
+          >
+            <ion-icon name="trash" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="trainingPlans.length === 0" class="empty-state">
+        <ion-icon name="fitness-outline" class="empty-state-icon"></ion-icon>
+        <h2 class="empty-state-title">Keine Trainingspläne</h2>
+        <p class="empty-state-text">Erstellen Sie Ihren ersten Trainingsplan</p>
+      </div>
+    </div>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="createTrainingPlan()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
+

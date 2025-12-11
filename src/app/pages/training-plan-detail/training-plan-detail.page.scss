@@ -1,0 +1,32 @@
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+}
+
+.no-description {
+  color: var(--ion-color-medium);
+  font-style: italic;
+}
+
+.rest-time {
+  color: var(--ion-color-primary);
+  font-size: 0.9em;
+}
+
+.notes {
+  color: var(--ion-color-medium);
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+ion-card {
+  margin: 16px;
+}
+
+ion-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+

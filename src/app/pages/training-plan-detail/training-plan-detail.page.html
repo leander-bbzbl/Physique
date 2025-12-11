@@ -1,0 +1,71 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/training-plans"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ trainingPlan?.name || 'Trainingsplan' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div *ngIf="loading" class="loading-container">
+    <p>Lädt...</p>
+  </div>
+
+  <div *ngIf="!loading && trainingPlan">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ trainingPlan.name }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p *ngIf="trainingPlan.description">{{ trainingPlan.description }}</p>
+        <p *ngIf="!trainingPlan.description" class="no-description">Keine Beschreibung</p>
+        <ion-badge *ngIf="trainingPlan.isActive" color="success">Aktiv</ion-badge>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-list>
+      <ion-item>
+        <ion-label>
+          <h2>Übungen ({{ planExercises.length }})</h2>
+        </ion-label>
+      </ion-item>
+
+      <ion-item *ngFor="let planExercise of planExercises">
+        <ion-label>
+          <h2>{{ planExercise.exercise?.name || 'Unbekannte Übung' }}</h2>
+          <p>
+            {{ planExercise.sets }} Sätze × {{ planExercise.reps }} Wiederholungen
+            <span *ngIf="planExercise.weight"> &#64; {{ planExercise.weight }}kg</span>
+          </p>
+          <p *ngIf="planExercise.restSeconds" class="rest-time">
+            Pause: {{ planExercise.restSeconds }}s
+          </p>
+          <p *ngIf="planExercise.notes" class="notes">{{ planExercise.notes }}</p>
+        </ion-label>
+        <ion-button
+          slot="end"
+          fill="clear"
+          color="danger"
+          (click)="removeExercise(planExercise)"
+        >
+          <ion-icon name="trash"></ion-icon>
+        </ion-button>
+      </ion-item>
+
+      <ion-item *ngIf="planExercises.length === 0">
+        <ion-label>
+          <h2>Keine Übungen</h2>
+          <p>Fügen Sie Übungen zu diesem Plan hinzu</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="addExerciseToPlan()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
+

@@ -1,0 +1,8 @@
+{
+  "name": "physique",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
+

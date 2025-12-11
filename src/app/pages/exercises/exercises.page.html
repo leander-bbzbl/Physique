@@ -1,0 +1,73 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Übungen</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" routerLink="/profile">
+        <ion-icon name="person-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-searchbar
+    [(ngModel)]="searchTerm"
+    (ionInput)="filterExercises($event)"
+    (ionClear)="clearSearch()"
+    placeholder="Übungen suchen..."
+    debounce="300"
+    show-clear-button="always"
+  ></ion-searchbar>
+
+  <div class="page-container">
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+      <p>Lädt...</p>
+    </div>
+
+    <!-- Übungen Liste - EINFACH UND DIREKT -->
+    <div *ngIf="!loading">
+      <div *ngFor="let exercise of filteredExercises; trackBy: trackByExerciseId" class="card-item">
+        <div class="card-item-header">
+          <div style="flex: 1;">
+            <h3 class="card-item-title">{{ exercise?.name || 'Unbenannte Übung' }}</h3>
+            <p *ngIf="exercise?.description" class="card-item-subtitle">{{ exercise.description }}</p>
+          </div>
+        </div>
+        <div *ngIf="exercise.muscleGroups && exercise.muscleGroups.length > 0" style="margin-bottom: 12px;">
+          <ion-badge *ngFor="let mg of exercise.muscleGroups" color="primary" style="margin-right: 6px; margin-bottom: 4px;">
+            {{ mg }}
+          </ion-badge>
+        </div>
+        <div *ngIf="exercise.equipment" style="display: flex; align-items: center; color: #8E8E93; font-size: 14px; margin-bottom: 12px;">
+          <ion-icon name="fitness" style="margin-right: 6px;"></ion-icon>
+          {{ exercise.equipment }}
+        </div>
+        <div class="card-item-actions">
+          <ion-button fill="clear" size="small" (click)="editExercise(exercise); $event.stopPropagation()">
+            <ion-icon name="create" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ion-button fill="clear" size="small" color="danger" (click)="deleteExercise(exercise); $event.stopPropagation()">
+            <ion-icon name="trash" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredExercises.length === 0" class="empty-state">
+        <ion-icon name="barbell-outline" class="empty-state-icon"></ion-icon>
+        <h2 class="empty-state-title">Keine Übungen gefunden</h2>
+        <p class="empty-state-text" *ngIf="searchTerm">Versuchen Sie eine andere Suche</p>
+        <p class="empty-state-text" *ngIf="!searchTerm">Erstellen Sie Ihre erste Übung</p>
+      </div>
+    </div>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="createExercise()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
+
