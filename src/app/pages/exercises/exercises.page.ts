@@ -15,7 +15,6 @@ import {
   IonFab,
   IonFabButton,
   IonButtons,
-  IonSearchbar,
   IonCard,
   IonCardContent,
   IonCardHeader,
@@ -51,7 +50,6 @@ import { Exercise } from '../../models';
     IonFab,
     IonFabButton,
     IonButtons,
-    IonSearchbar,
     IonCard,
     IonCardContent,
     IonCardHeader,
@@ -62,8 +60,6 @@ import { Exercise } from '../../models';
 })
 export class ExercisesPage implements OnInit {
   exercises: Exercise[] = [];
-  filteredExercises: Exercise[] = [];
-  searchTerm = '';
   loading = false;
 
   constructor(
@@ -93,12 +89,9 @@ export class ExercisesPage implements OnInit {
       
       // Sicherstellen, dass es ein Array ist
       this.exercises = Array.isArray(exercises) ? exercises : [];
-      this.filteredExercises = Array.from(this.exercises); // Neue Array-Instanz
       
       console.log('✅ Exercises Array gesetzt:', this.exercises);
-      console.log('✅ Filtered Exercises Array gesetzt:', this.filteredExercises);
       console.log('✅ Anzahl Übungen:', this.exercises.length);
-      console.log('✅ Anzahl gefilterte Übungen:', this.filteredExercises.length);
       
       // Debug: Zeige alle Übungen
       if (this.exercises.length > 0) {
@@ -118,7 +111,6 @@ export class ExercisesPage implements OnInit {
       console.error('❌ Error loading exercises:', error);
       this.showToast('Fehler beim Laden der Übungen', 'danger');
       this.exercises = [];
-      this.filteredExercises = [];
     } finally {
       this.loading = false;
       this.cdr.detectChanges();
@@ -130,32 +122,6 @@ export class ExercisesPage implements OnInit {
     return exercise.id || index;
   }
 
-  filterExercises(event: any) {
-    const searchTerm = event?.detail?.value?.toLowerCase() || '';
-    this.searchTerm = event?.detail?.value || '';
-    
-    if (!searchTerm || searchTerm.trim() === '') {
-      // Wenn keine Suche, zeige alle Übungen
-      this.filteredExercises = [...this.exercises];
-    } else {
-      // Filtere die Übungen
-      this.filteredExercises = this.exercises.filter(exercise =>
-        exercise.name.toLowerCase().includes(searchTerm) ||
-        (exercise.description && exercise.description.toLowerCase().includes(searchTerm)) ||
-        (exercise.muscleGroups && exercise.muscleGroups.some(mg => mg.toLowerCase().includes(searchTerm)))
-      );
-    }
-    
-    console.log('Filter angewendet. SearchTerm:', this.searchTerm);
-    console.log('Gefilterte Übungen:', this.filteredExercises.length);
-    this.cdr.detectChanges();
-  }
-
-  clearSearch() {
-    this.searchTerm = '';
-    this.filteredExercises = [...this.exercises];
-    this.cdr.detectChanges();
-  }
 
   async createExercise() {
     const alert = await this.alertController.create({
@@ -219,22 +185,6 @@ export class ExercisesPage implements OnInit {
                 console.log('Erstellte Übung:', created);
                 await this.loadExercises();
                 console.log('Übungen nach dem Laden:', this.exercises);
-                
-                // Stelle sicher, dass filteredExercises aktualisiert wird
-                if (this.searchTerm && this.searchTerm.trim() !== '') {
-                  // Wenn eine Suche aktiv ist, filtere erneut
-                  const searchTermLower = this.searchTerm.toLowerCase();
-                  this.filteredExercises = this.exercises.filter(exercise =>
-                    exercise.name.toLowerCase().includes(searchTermLower) ||
-                    (exercise.description && exercise.description.toLowerCase().includes(searchTermLower)) ||
-                    (exercise.muscleGroups && exercise.muscleGroups.some(mg => mg.toLowerCase().includes(searchTermLower)))
-                  );
-                } else {
-                  // Wenn keine Suche, zeige alle
-                  this.filteredExercises = [...this.exercises];
-                }
-                
-                console.log('Filtered Exercises nach Erstellen:', this.filteredExercises.length);
                 this.cdr.detectChanges();
                 this.showToast('Übung erstellt', 'success');
               } catch (error: any) {

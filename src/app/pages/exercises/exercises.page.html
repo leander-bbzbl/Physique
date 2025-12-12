@@ -10,15 +10,6 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-searchbar
-    [(ngModel)]="searchTerm"
-    (ionInput)="filterExercises($event)"
-    (ionClear)="clearSearch()"
-    placeholder="Übungen suchen..."
-    debounce="300"
-    show-clear-button="always"
-  ></ion-searchbar>
-
   <div class="page-container">
 
     <!-- Loading State -->
@@ -28,7 +19,7 @@
 
     <!-- Übungen Liste - EINFACH UND DIREKT -->
     <div *ngIf="!loading">
-      <div *ngFor="let exercise of filteredExercises; trackBy: trackByExerciseId" class="card-item">
+      <div *ngFor="let exercise of exercises; trackBy: trackByExerciseId" class="card-item">
         <div class="card-item-header">
           <div style="flex: 1;">
             <h3 class="card-item-title">{{ exercise?.name || 'Unbenannte Übung' }}</h3>
@@ -55,11 +46,10 @@
       </div>
 
       <!-- Empty State -->
-      <div *ngIf="filteredExercises.length === 0" class="empty-state">
+      <div *ngIf="exercises.length === 0" class="empty-state">
         <ion-icon name="barbell-outline" class="empty-state-icon"></ion-icon>
-        <h2 class="empty-state-title">Keine Übungen gefunden</h2>
-        <p class="empty-state-text" *ngIf="searchTerm">Versuchen Sie eine andere Suche</p>
-        <p class="empty-state-text" *ngIf="!searchTerm">Erstellen Sie Ihre erste Übung</p>
+        <h2 class="empty-state-title">Keine Übungen</h2>
+        <p class="empty-state-text">Erstellen Sie Ihre erste Übung</p>
       </div>
     </div>
   </div>
