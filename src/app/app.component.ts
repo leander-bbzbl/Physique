@@ -4,6 +4,7 @@ import { IonApp, Platform } from '@ionic/angular/standalone';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SupabaseService } from './services/supabase.service';
 import { ThemeService } from './services/theme.service';
+import { NotificationService } from './services/notification.service';
 import { BottomNavComponent } from './components/bottom-nav/bottom-nav.component';
 
 @Component({
@@ -19,6 +20,7 @@ export class AppComponent implements OnInit {
   constructor(
     private supabaseService: SupabaseService,
     private themeService: ThemeService,
+    private notificationService: NotificationService,
     private platform: Platform
   ) {}
 
@@ -56,6 +58,14 @@ export class AppComponent implements OnInit {
     } catch (error) {
       console.error('Fehler beim Initialisieren der App:', error);
       // App sollte trotzdem weiterlaufen, auch wenn Supabase nicht verfügbar ist
+    }
+
+    // Initialisiere Benachrichtigungen
+    try {
+      await this.notificationService.initialize();
+    } catch (error) {
+      console.error('Fehler beim Initialisieren der Benachrichtigungen:', error);
+      // App sollte trotzdem weiterlaufen, auch wenn Benachrichtigungen nicht verfügbar sind
     }
   }
 }
