@@ -55,3 +55,19 @@ Thumbs.db
 *.apk
 *.aab
 
+# Scripts und Hilfsdateien (nicht Teil der App)
+*.bat
+*.ps1
+test-db.html
+
+# Dokumentation (wird nicht benötigt im Repo)
+*.md
+
+# Scripts und Hilfsdateien (nicht Teil der App)
+*.bat
+*.ps1
+test-db.html
+
+# Dokumentation (wird nicht benötigt im Repo)
+*.md
+
