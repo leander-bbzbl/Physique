@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
@@ -21,6 +21,7 @@ import {
 import { arrowBack } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 import { TrainingPlanService } from '../../services/training-plan.service';
+import { NotificationService } from '../../services/notification.service';
 import { TrainingPlan, TrainingPlanExercise } from '../../models';
 
 @Component({
@@ -47,20 +48,28 @@ import { TrainingPlan, TrainingPlanExercise } from '../../models';
     IonCardTitle
   ]
 })
-export class ActiveTrainingPage implements OnInit {
+export class ActiveTrainingPage implements OnInit, OnDestroy {
   activePlan: TrainingPlan | null = null;
   planExercises: TrainingPlanExercise[] = [];
   loading = false;
 
   constructor(
     private trainingPlanService: TrainingPlanService,
+    private notificationService: NotificationService,
     private toastController: ToastController
   ) {
     addIcons({ arrowBack });
   }
 
   async ngOnInit() {
+    // Pausiere Benachrichtigungen während des Trainings
+    this.notificationService.pauseNotifications();
     await this.loadActivePlan();
+  }
+
+  ngOnDestroy() {
+    // Setze Benachrichtigungen fort, wenn die Seite verlassen wird
+    this.notificationService.resumeNotifications();
   }
 
   async loadActivePlan() {

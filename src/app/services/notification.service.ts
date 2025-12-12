@@ -7,8 +7,10 @@ import { Platform } from '@ionic/angular/standalone';
 })
 export class NotificationService {
   private intervalId: number | null = null;
-  private readonly NOTIFICATION_INTERVAL = 5 * 1000; // 10 Sekunden in Millisekunden
+  private readonly NOTIFICATION_INTERVAL = 10 * 1000; // 10 Sekunden in Millisekunden
   private readonly NOTIFICATION_ID = 1;
+  private isPaused: boolean = false;
+  private wasRunningBeforePause: boolean = false;
 
   constructor(private platform: Platform) {}
 
@@ -54,15 +56,24 @@ export class NotificationService {
     // Stoppe eventuell laufende Benachrichtigungen
     this.stopPeriodicNotifications();
 
+    // Nur starten wenn nicht pausiert
+    if (this.isPaused) {
+      this.wasRunningBeforePause = true;
+      console.log('Benachrichtigungen pausiert - werden nicht gestartet');
+      return;
+    }
+
     // Erste Benachrichtigung sofort senden
     this.sendNotification();
 
     // Dann alle 10 Sekunden
     this.intervalId = window.setInterval(() => {
-      this.sendNotification();
+      if (!this.isPaused) {
+        this.sendNotification();
+      }
     }, this.NOTIFICATION_INTERVAL);
 
-    console.log('Periodische Benachrichtigungen gestartet (alle 5 Sekunden)');
+    console.log('Periodische Benachrichtigungen gestartet (alle 10 Sekunden)');
   }
 
   /**
@@ -73,7 +84,7 @@ export class NotificationService {
       await LocalNotifications.schedule({
         notifications: [
           {
-            title: 'komm sofort zurück digga',
+            title: 'komm zurück',
             body: '',
             id: this.NOTIFICATION_ID,
             sound: 'default',
@@ -89,7 +100,7 @@ export class NotificationService {
   }
 
   /**
-   * Stoppt die periodischen Benachrichtigungen
+   * Stoppt die periodischen Benachrichtigungen komplett
    */
   stopPeriodicNotifications(): void {
     if (this.intervalId !== null) {
@@ -97,6 +108,41 @@ export class NotificationService {
       this.intervalId = null;
       console.log('Periodische Benachrichtigungen gestoppt');
     }
+    this.isPaused = false;
+    this.wasRunningBeforePause = false;
+  }
+
+  /**
+   * Pausiert die Benachrichtigungen (z.B. während des Trainings)
+   */
+  pauseNotifications(): void {
+    if (this.intervalId !== null) {
+      this.isPaused = true;
+      this.wasRunningBeforePause = true;
+      console.log('Benachrichtigungen pausiert');
+    }
+  }
+
+  /**
+   * Setzt die Benachrichtigungen fort (z.B. nach dem Training)
+   */
+  resumeNotifications(): void {
+    if (this.isPaused && this.wasRunningBeforePause) {
+      this.isPaused = false;
+      console.log('Benachrichtigungen fortgesetzt');
+      
+      // Wenn kein Interval läuft, neu starten
+      if (this.intervalId === null) {
+        this.startPeriodicNotifications();
+      }
+    }
+  }
+
+  /**
+   * Prüft ob Benachrichtigungen pausiert sind
+   */
+  isPausedState(): boolean {
+    return this.isPaused;
   }
 
   /**
