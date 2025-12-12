@@ -71,11 +71,27 @@ export class ProfileService {
       }
 
       // Prüfe ob bereits ein Profil existiert
-      const { data: existingProfile } = await this.supabaseService.client
+      const { data: existingProfile, error: selectError } = await this.supabaseService.client
         .from(this.tableName)
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // maybeSingle() statt single() um keinen Fehler zu werfen wenn kein Eintrag existiert
+
+      if (selectError && selectError.code !== 'PGRST116') {
+        // Fehler beim Abfragen (außer "kein Eintrag gefunden")
+        console.error('Fehler beim Prüfen des Profils:', selectError);
+        console.error('Fehler-Code:', selectError.code);
+        console.error('Fehler-Message:', selectError.message);
+        console.error('Fehler-Details:', selectError.details);
+        console.error('Fehler-Hint:', selectError.hint);
+        
+        // Wenn die Tabelle nicht existiert, ist das ein kritisches Problem
+        if (selectError.code === '42P01' || selectError.message?.includes('does not exist')) {
+          console.error('❌ FEHLER: Die Tabelle "user_profiles" existiert nicht!');
+          console.error('Bitte führe das SQL-Script "supabase_user_profiles.sql" in deiner Supabase-Datenbank aus.');
+        }
+        return false;
+      }
 
       if (existingProfile) {
         // Update vorhandenes Profil
@@ -86,8 +102,12 @@ export class ProfileService {
 
         if (error) {
           console.error('Fehler beim Aktualisieren des Profilbilds:', error);
+          console.error('Fehler-Code:', error.code);
+          console.error('Fehler-Message:', error.message);
+          console.error('Fehler-Details:', error.details);
           return false;
         }
+        console.log('✓ Profilbild erfolgreich aktualisiert in Supabase');
       } else {
         // Erstelle neues Profil
         const { error } = await this.supabaseService.client
@@ -99,8 +119,19 @@ export class ProfileService {
 
         if (error) {
           console.error('Fehler beim Erstellen des Profils:', error);
+          console.error('Fehler-Code:', error.code);
+          console.error('Fehler-Message:', error.message);
+          console.error('Fehler-Details:', error.details);
+          console.error('Fehler-Hint:', error.hint);
+          
+          // Wenn die Tabelle nicht existiert, ist das ein kritisches Problem
+          if (error.code === '42P01' || error.message?.includes('does not exist')) {
+            console.error('❌ FEHLER: Die Tabelle "user_profiles" existiert nicht!');
+            console.error('Bitte führe das SQL-Script "supabase_user_profiles.sql" in deiner Supabase-Datenbank aus.');
+          }
           return false;
         }
+        console.log('✓ Profilbild erfolgreich in Supabase gespeichert');
       }
 
       return true;

@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import {
   IonContent,
   IonHeader,
@@ -14,12 +13,10 @@ import {
   IonAvatar,
   IonButtons,
   IonToggle,
-  AlertController,
   ToastController
 } from '@ionic/angular/standalone';
 import { 
   personOutline, 
-  logOutOutline, 
   settingsOutline,
   personCircleOutline,
   moonOutline,
@@ -52,7 +49,7 @@ import { Platform } from '@ionic/angular/standalone';
     IonButtons,
     IonToggle
   ],
-  providers: [AlertController, ToastController]
+  providers: [ToastController]
 })
 export class ProfilePage implements OnInit {
   userEmail: string = '';
@@ -64,14 +61,11 @@ export class ProfilePage implements OnInit {
     private supabaseService: SupabaseService,
     private themeService: ThemeService,
     private profileService: ProfileService,
-    private router: Router,
-    private alertController: AlertController,
     private toastController: ToastController,
     private platform: Platform
   ) {
     addIcons({ 
       personOutline, 
-      logOutOutline, 
       settingsOutline,
       personCircleOutline,
       moonOutline,
@@ -107,37 +101,6 @@ export class ProfilePage implements OnInit {
       this.userEmail = 'Nicht verfügbar';
       this.userName = 'Benutzer';
     }
-  }
-
-  async logout() {
-    const alert = await this.alertController.create({
-      header: 'Abmelden?',
-      message: 'Möchten Sie sich wirklich abmelden?',
-      buttons: [
-        {
-          text: 'Abbrechen',
-          role: 'cancel'
-        },
-        {
-          text: 'Abmelden',
-          role: 'destructive',
-          handler: async () => {
-            try {
-              if (this.supabaseService.isConfigured) {
-                await this.supabaseService.client.auth.signOut();
-              }
-              this.showToast('Erfolgreich abgemeldet', 'success');
-              this.router.navigate(['/training-plans']);
-            } catch (error) {
-              console.error('Fehler beim Abmelden:', error);
-              this.showToast('Fehler beim Abmelden', 'danger');
-            }
-          }
-        }
-      ]
-    });
-
-    await alert.present();
   }
 
   toggleTheme() {
@@ -187,23 +150,55 @@ export class ProfilePage implements OnInit {
    */
   async saveProfileImage(imageDataUrl: string) {
     try {
+      // Prüfe ob Supabase konfiguriert ist
+      if (!this.supabaseService.isConfigured) {
+        console.warn('Supabase nicht konfiguriert - speichere lokal');
+        localStorage.setItem('profileImage', imageDataUrl);
+        this.profileImageUrl = imageDataUrl;
+        this.showToast('Profilbild lokal gespeichert (Supabase nicht konfiguriert)', 'warning');
+        return;
+      }
+
+      // Prüfe ob Benutzer angemeldet ist
+      try {
+        const { data: { user } } = await this.supabaseService.client.auth.getUser();
+        if (!user) {
+          console.warn('Kein Benutzer angemeldet - speichere lokal');
+          localStorage.setItem('profileImage', imageDataUrl);
+          this.profileImageUrl = imageDataUrl;
+          this.showToast('Profilbild lokal gespeichert (Nicht angemeldet)', 'warning');
+          return;
+        }
+      } catch (authError) {
+        console.error('Fehler beim Prüfen der Authentifizierung:', authError);
+        localStorage.setItem('profileImage', imageDataUrl);
+        this.profileImageUrl = imageDataUrl;
+        this.showToast('Profilbild lokal gespeichert (Authentifizierungsfehler)', 'warning');
+        return;
+      }
+
+      // Versuche in Supabase zu speichern
       const success = await this.profileService.saveProfileImage(imageDataUrl);
       if (success) {
         this.profileImageUrl = imageDataUrl;
         // Entferne auch aus localStorage falls vorhanden (Migration)
         localStorage.removeItem('profileImage');
+        this.showToast('Profilbild erfolgreich in der Datenbank gespeichert', 'success');
       } else {
-        // Fallback zu localStorage falls Datenbank nicht verfügbar
+        // Fehler beim Speichern in Supabase
+        console.error('Fehler beim Speichern in Supabase - möglicherweise fehlt die user_profiles Tabelle');
         localStorage.setItem('profileImage', imageDataUrl);
         this.profileImageUrl = imageDataUrl;
-        this.showToast('Profilbild lokal gespeichert (Datenbank nicht verfügbar)', 'warning');
+        this.showToast('Fehler: Bitte führe das SQL-Script aus (supabase_user_profiles.sql)', 'danger');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Fehler beim Speichern des Profilbilds:', error);
+      console.error('Fehler-Details:', JSON.stringify(error, null, 2));
       // Fallback zu localStorage
       localStorage.setItem('profileImage', imageDataUrl);
       this.profileImageUrl = imageDataUrl;
-      this.showToast('Profilbild lokal gespeichert (Fehler bei Datenbank)', 'warning');
+      const errorMessage = error?.message || 'Unbekannter Fehler';
+      this.showToast(`Fehler: ${errorMessage}. Bitte prüfe die Konsole.`, 'danger');
     }
   }
 
