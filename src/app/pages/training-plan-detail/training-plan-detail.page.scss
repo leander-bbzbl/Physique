@@ -30,3 +30,10 @@ ion-item {
   --padding-end: 16px;
 }
 
+// Floating Action Button Positionierung
+ion-fab {
+  --ion-safe-area-bottom: 140px; // Abstand vom unteren Rand (Bottom Nav + Padding)
+  bottom: 140px !important; // Abstand vom Boden
+  right: 20px !important; // Abstand vom rechten Rand
+}
+
