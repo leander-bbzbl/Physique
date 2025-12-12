@@ -7,7 +7,7 @@ import { Platform } from '@ionic/angular/standalone';
 })
 export class NotificationService {
   private intervalId: number | null = null;
-  private readonly NOTIFICATION_INTERVAL = 10 * 1000; // 10 Sekunden in Millisekunden
+  private readonly NOTIFICATION_INTERVAL = 5 * 1000; // 10 Sekunden in Millisekunden
   private readonly NOTIFICATION_ID = 1;
 
   constructor(private platform: Platform) {}
@@ -62,7 +62,7 @@ export class NotificationService {
       this.sendNotification();
     }, this.NOTIFICATION_INTERVAL);
 
-    console.log('Periodische Benachrichtigungen gestartet (alle 10 Sekunden)');
+    console.log('Periodische Benachrichtigungen gestartet (alle 5 Sekunden)');
   }
 
   /**
@@ -73,7 +73,7 @@ export class NotificationService {
       await LocalNotifications.schedule({
         notifications: [
           {
-            title: 'komm zurück',
+            title: 'komm sofort zurück digga',
             body: '',
             id: this.NOTIFICATION_ID,
             sound: 'default',
