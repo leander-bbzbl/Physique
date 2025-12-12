@@ -6,13 +6,8 @@
       </ion-button>
     </ion-buttons>
     <ion-title>
-      Aktives Training
+      Trainingsplan
     </ion-title>
-    <ion-buttons slot="end" *ngIf="isTraining">
-      <ion-button (click)="finishTraining()" color="danger">
-        <ion-icon name="stop"></ion-icon>
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -22,108 +17,51 @@
   </div>
 
   <div *ngIf="!loading && activePlan">
+    <!-- Trainingsplan Header -->
     <ion-card>
       <ion-card-header>
         <ion-card-title>{{ activePlan.name }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <p *ngIf="activePlan.description">{{ activePlan.description }}</p>
-        <div class="progress-info">
-          <p>
-            Übung {{ currentExerciseIndex + 1 }} von {{ planExercises.length }}
-            <span *ngIf="isTraining">
-              ({{ getCompletedExercisesCount() }} abgeschlossen)
-            </span>
-          </p>
-        </div>
+        <p class="exercise-count">
+          {{ planExercises.length }} {{ planExercises.length === 1 ? 'Übung' : 'Übungen' }}
+        </p>
       </ion-card-content>
     </ion-card>
 
-    <div *ngIf="!isTraining" class="start-container">
-      <ion-button expand="block" size="large" (click)="startTraining()" [disabled]="planExercises.length === 0">
-        <ion-icon name="play" slot="start"></ion-icon>
-        Training starten
-      </ion-button>
-      <p *ngIf="planExercises.length === 0" class="warning">
-        Fügen Sie zuerst Übungen zu diesem Trainingsplan hinzu
-      </p>
-    </div>
-
-    <div *ngIf="isTraining && getCurrentExercise()">
-      <ion-card class="current-exercise">
-        <ion-card-header>
-          <ion-card-title>
-            {{ getCurrentExercise()!.planExercise.exercise?.name }}
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="exercise-info">
-            <p>
-              <strong>{{ getCurrentExercise()!.planExercise.sets }} Sätze</strong> ×
-              <strong>{{ getCurrentExercise()!.planExercise.reps }} Wiederholungen</strong>
-              <span *ngIf="getCurrentExercise()!.planExercise.weight">
-                &#64; {{ getCurrentExercise()!.planExercise.weight }}kg
+    <!-- Übungen Liste -->
+    <div *ngIf="planExercises.length > 0">
+      <ion-list>
+        <ion-item *ngFor="let planExercise of planExercises; let i = index" lines="full">
+          <ion-label>
+            <h2>{{ i + 1 }}. {{ planExercise.exercise?.name || 'Unbekannte Übung' }}</h2>
+            <p class="exercise-details">
+              <strong>{{ planExercise.sets }} Sätze</strong> × 
+              <strong>{{ planExercise.reps }} Wiederholungen</strong>
+              <span *ngIf="planExercise.weight">
+                &#64; {{ planExercise.weight }}kg
               </span>
             </p>
-            <p *ngIf="getCurrentExercise()!.planExercise.restSeconds" class="rest-info">
-              Pause: {{ getCurrentExercise()!.planExercise.restSeconds }}s
-            </p>
-          </div>
-
-          <div *ngIf="restTimeRemaining > 0" class="rest-timer">
-            <h2>Pause: {{ restTimeRemaining }}s</h2>
-          </div>
-
-          <ion-list>
-            <ion-item *ngFor="let set of getCurrentExercise()!.completedSets; let i = index">
-              <ion-label>
-                <h3>Satz {{ i + 1 }}</h3>
-              </ion-label>
-              <ion-checkbox
-                [checked]="set"
-                (ionChange)="completeSet(currentExerciseIndex, i)"
-              ></ion-checkbox>
-            </ion-item>
-          </ion-list>
-
-          <div class="navigation-buttons">
-            <ion-button
-              fill="outline"
-              (click)="previousExercise()"
-              [disabled]="currentExerciseIndex === 0"
-            >
-              Zurück
-            </ion-button>
-            <ion-button
-              fill="solid"
-              (click)="nextExercise()"
-              [disabled]="currentExerciseIndex === planExercises.length - 1"
-            >
-              Nächste Übung
-            </ion-button>
-          </div>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-list>
-        <ion-item *ngFor="let progress of exerciseProgress; let i = index">
-          <ion-label>
-            <h2 [class.completed]="progress.isCompleted">
-              {{ progress.planExercise.exercise?.name }}
-            </h2>
-            <p>
-              {{ getCompletedSetsCount(progress) }} / {{ progress.planExercise.sets }} Sätze
+            <p *ngIf="planExercise.notes" class="notes">
+              {{ planExercise.notes }}
             </p>
           </ion-label>
-          <ion-badge *ngIf="progress.isCompleted" color="success" slot="end">
-            <ion-icon name="checkmark"></ion-icon>
-          </ion-badge>
-          <ion-badge *ngIf="i === currentExerciseIndex && !progress.isCompleted" color="primary" slot="end">
-            Aktuell
-          </ion-badge>
         </ion-item>
       </ion-list>
     </div>
+
+    <!-- Keine Übungen -->
+    <div *ngIf="planExercises.length === 0" class="empty-state">
+      <p>Dieser Trainingsplan enthält noch keine Übungen.</p>
+      <p>Fügen Sie Übungen hinzu, um den Plan zu vervollständigen.</p>
+    </div>
+  </div>
+
+  <!-- Kein aktiver Plan -->
+  <div *ngIf="!loading && !activePlan" class="empty-state">
+    <p>Kein aktiver Trainingsplan gefunden.</p>
+    <p>Wählen Sie einen Trainingsplan aus, um ihn hier anzuzeigen.</p>
   </div>
 </ion-content>
 

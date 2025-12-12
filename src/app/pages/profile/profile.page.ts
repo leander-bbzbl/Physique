@@ -29,6 +29,7 @@ import { addIcons } from 'ionicons';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { SupabaseService } from '../../services/supabase.service';
 import { ThemeService } from '../../services/theme.service';
+import { ProfileService } from '../../services/profile.service';
 import { Platform } from '@ionic/angular/standalone';
 
 @Component({
@@ -62,6 +63,7 @@ export class ProfilePage implements OnInit {
   constructor(
     private supabaseService: SupabaseService,
     private themeService: ThemeService,
+    private profileService: ProfileService,
     private router: Router,
     private alertController: AlertController,
     private toastController: ToastController,
@@ -79,7 +81,7 @@ export class ProfilePage implements OnInit {
 
   async ngOnInit() {
     await this.loadUserProfile();
-    this.loadProfileImage();
+    await this.loadProfileImage();
     this.isDarkMode = this.themeService.getCurrentTheme() === 'dark';
     // Subscribe to theme changes
     this.themeService.theme$.subscribe(theme => {
@@ -153,21 +155,56 @@ export class ProfilePage implements OnInit {
   }
 
   /**
-   * Lädt das gespeicherte Profilbild aus dem LocalStorage
+   * Lädt das gespeicherte Profilbild aus der Datenbank
    */
-  loadProfileImage() {
-    const savedImage = localStorage.getItem('profileImage');
-    if (savedImage) {
-      this.profileImageUrl = savedImage;
+  async loadProfileImage() {
+    try {
+      const imageUrl = await this.profileService.getProfileImage();
+      if (imageUrl) {
+        this.profileImageUrl = imageUrl;
+      } else {
+        // Fallback: Prüfe localStorage für Migration
+        const savedImage = localStorage.getItem('profileImage');
+        if (savedImage) {
+          // Migriere von localStorage zur Datenbank
+          await this.profileService.saveProfileImage(savedImage);
+          this.profileImageUrl = savedImage;
+          localStorage.removeItem('profileImage'); // Entferne aus localStorage
+        }
+      }
+    } catch (error) {
+      console.error('Fehler beim Laden des Profilbilds:', error);
+      // Fallback zu localStorage falls Datenbank nicht verfügbar
+      const savedImage = localStorage.getItem('profileImage');
+      if (savedImage) {
+        this.profileImageUrl = savedImage;
+      }
     }
   }
 
   /**
-   * Speichert das Profilbild im LocalStorage
+   * Speichert das Profilbild in der Datenbank
    */
-  saveProfileImage(imageDataUrl: string) {
-    localStorage.setItem('profileImage', imageDataUrl);
-    this.profileImageUrl = imageDataUrl;
+  async saveProfileImage(imageDataUrl: string) {
+    try {
+      const success = await this.profileService.saveProfileImage(imageDataUrl);
+      if (success) {
+        this.profileImageUrl = imageDataUrl;
+        // Entferne auch aus localStorage falls vorhanden (Migration)
+        localStorage.removeItem('profileImage');
+      } else {
+        // Fallback zu localStorage falls Datenbank nicht verfügbar
+        localStorage.setItem('profileImage', imageDataUrl);
+        this.profileImageUrl = imageDataUrl;
+        this.showToast('Profilbild lokal gespeichert (Datenbank nicht verfügbar)', 'warning');
+      }
+    } catch (error) {
+      console.error('Fehler beim Speichern des Profilbilds:', error);
+      // Fallback zu localStorage
+      localStorage.setItem('profileImage', imageDataUrl);
+      this.profileImageUrl = imageDataUrl;
+      this.showToast('Profilbild lokal gespeichert (Fehler bei Datenbank)', 'warning');
+    }
   }
 
   /**

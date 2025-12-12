@@ -146,7 +146,12 @@ export class TrainingPlansPage implements OnInit {
         {
           text: 'Erstellen',
           handler: async (data) => {
+            // Validierung: Name ist erforderlich
             if (!data || !data.name || data.name.trim() === '') {
+              // Zeige Fehlermeldung und verhindere Schließen des Alerts
+              setTimeout(() => {
+                this.showToast('Bitte geben Sie einen Namen für den Trainingsplan ein', 'danger');
+              }, 100);
               return false;
             }
             

@@ -3,64 +3,37 @@
   justify-content: center;
   align-items: center;
   height: 50vh;
+  color: var(--text-secondary);
 }
 
-.start-container {
-  padding: 20px;
-  text-align: center;
-}
-
-.warning {
-  color: var(--ion-color-warning);
-  margin-top: 16px;
-}
-
-.current-exercise {
-  margin: 16px;
-}
-
-.exercise-info {
-  margin-bottom: 16px;
-}
-
-.rest-info {
-  color: var(--ion-color-primary);
-  font-weight: 500;
-}
-
-.rest-timer {
-  background: var(--ion-color-primary);
-  color: white;
-  padding: 20px;
-  border-radius: 8px;
-  text-align: center;
-  margin: 16px 0;
-  
-  h2 {
-    margin: 0;
-    font-size: 2em;
-  }
-}
-
-.navigation-buttons {
-  display: flex;
-  gap: 16px;
-  margin-top: 16px;
-  
-  ion-button {
-    flex: 1;
-  }
-}
-
-.completed {
-  text-decoration: line-through;
-  opacity: 0.6;
-}
-
-.progress-info {
+.exercise-count {
   margin-top: 8px;
   font-size: 0.9em;
-  color: var(--ion-color-medium);
+  color: var(--text-secondary);
+}
+
+.exercise-details {
+  margin: 8px 0 4px 0;
+  color: var(--text-primary);
+  font-size: 0.95em;
+}
+
+
+.notes {
+  margin-top: 8px;
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 0.9em;
+}
+
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  
+  p {
+    margin: 8px 0;
+  }
 }
 
 ion-card {
@@ -70,5 +43,21 @@ ion-card {
 ion-item {
   --padding-start: 16px;
   --padding-end: 16px;
+  margin-bottom: 8px;
+  
+  h2 {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  
+  p {
+    margin: 4px 0;
+  }
+}
+
+ion-list {
+  padding: 0 16px;
 }
 

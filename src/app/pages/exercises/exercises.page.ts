@@ -193,7 +193,12 @@ export class ExercisesPage implements OnInit {
         {
           text: 'Erstellen',
           handler: async (data) => {
+            // Validierung: Name ist erforderlich
             if (!data || !data.name || data.name.trim() === '') {
+              // Zeige Fehlermeldung und verhindere Schließen des Alerts
+              setTimeout(() => {
+                this.showToast('Bitte geben Sie einen Namen für die Übung ein', 'danger');
+              }, 100);
               return false;
             }
             
@@ -288,15 +293,24 @@ export class ExercisesPage implements OnInit {
         {
           text: 'Speichern',
           handler: async (data) => {
-            if (data.name && exercise.id) {
+            // Validierung: Name ist erforderlich
+            if (!data || !data.name || data.name.trim() === '') {
+              // Zeige Fehlermeldung und verhindere Schließen des Alerts
+              setTimeout(() => {
+                this.showToast('Bitte geben Sie einen Namen für die Übung ein', 'danger');
+              }, 100);
+              return false;
+            }
+
+            if (exercise.id) {
               try {
                 const updatedExercise: Partial<Exercise> = {
-                  name: data.name,
-                  description: data.description || undefined,
-                  muscleGroups: data.muscleGroups
+                  name: data.name.trim(),
+                  description: (data.description || '').trim() || undefined,
+                  muscleGroups: data.muscleGroups && data.muscleGroups.trim()
                     ? data.muscleGroups.split(',').map((mg: string) => mg.trim()).filter((mg: string) => mg)
                     : undefined,
-                  equipment: data.equipment || undefined
+                  equipment: (data.equipment || '').trim() || undefined
                 };
                 await this.exerciseService.updateExercise(exercise.id, updatedExercise);
                 await this.loadExercises();
@@ -307,6 +321,7 @@ export class ExercisesPage implements OnInit {
                 this.showToast(`Fehler: ${errorMessage}`, 'danger');
               }
             }
+            return true;
           }
         }
       ]
